@@ -7,34 +7,55 @@ class Program
 {
   static void Main(string[] args)
   {
-    Dictionary<string, string> mistakeDic = new Dictionary<string, string>()
-    {
-      { "првиет", "привет" },
-      { "пирвет", "привет" },
-      { "здравсвуйте", "здравствуйте" },
-      { "спосибо", "спасибо" }
-    };
-
-    string folderPath = Directory.GetParent(Directory.GetParent(Environment.CurrentDirectory).FullName).FullName;
-    string[] files = Directory.GetFiles(folderPath, "*.txt");
+    string folderPath = GetFolderPath();
+    string[] files = GetTextFiles(folderPath);
 
     foreach (string file in files)
     {
       string text = File.ReadAllText(file);
 
-      foreach (var mistake in mistakeDic)
-      {
-        text = text.Replace(mistake.Key, mistake.Value);
-      }
+      text = CorrectMistakes(text);
 
-      string pattern = @"\((\d{3})\)\s(\d{3})-(\d{2})-(\d{2})";
-
-      text = Regex.Replace(text, pattern, FormatPhoneNumber);
+      text = FixPhoneNumbers(text);
 
       File.WriteAllText(file, text);
 
       Console.WriteLine($"Исправления внесены в файл: {file}");
     }
+  }
+
+  static string GetFolderPath()
+  {
+    return Directory.GetParent(Directory.GetParent(Environment.CurrentDirectory).FullName).FullName;
+  }
+
+  static string[] GetTextFiles(string folderPath)
+  {
+    return Directory.GetFiles(folderPath, "*.txt");
+  }
+
+  static string CorrectMistakes(string text)
+  {
+    Dictionary<string, string> mistakeDic = new Dictionary<string, string>()
+        {
+            { "првиет", "привет" },
+            { "пирвет", "привет" },
+            { "здравсвуйте", "здравствуйте" },
+            { "спосибо", "спасибо" }
+        };
+
+    foreach (var mistake in mistakeDic)
+    {
+      text = text.Replace(mistake.Key, mistake.Value);
+    }
+
+    return text;
+  }
+
+  static string FixPhoneNumbers(string text)
+  {
+    string pattern = @"\((\d{3})\)\s(\d{3})-(\d{2})-(\d{2})";
+    return Regex.Replace(text, pattern, FormatPhoneNumber);
   }
 
   static string FormatPhoneNumber(Match match)
